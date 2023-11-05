@@ -161,7 +161,26 @@ def main(config):
         row1 = rocket_launch_data["result"][0]["vehicle"]["name"]
         row2 = rocket_launch_data["result"][0]["date_str"]
         row3 = get_launch_details(rocket_launch_data)
-        row4 = rocket_launch_data["result"][0]["launch_description"]
+        # row4 = rocket_launch_data["result"][0]["launch_description"]
+
+        provider = rocket_launch_data["result"][0]["provider"]["name"]
+        vehicle = rocket_launch_data["result"][0]["vehicle"]["name"]
+        mission = rocket_launch_data["result"][0]["missions"][0]["name"]
+        t0_text = rocket_launch_data["result"][0]["t0"]
+
+        #Current Json doesn't include seconds and throws error when parsing
+        if (len(t0_text) == 17):
+            t0_text = t0_text.replace("Z", ":00Z")
+
+        t0_time = time.parse_time(t0_text)
+        print("%s" % (t0_time)) 
+        # tz_offset = time.now().hour - time.now().in_location("UTC").hour
+        # t0_time = t0_time + time.parse_duration("-4h")
+
+        print(time.now()) 
+        print("%s" % (t0_time.in_location('America/New_York')))
+
+        row4 = "A %s %s rocket will launch the %s mission on %s." % (provider, vehicle, mission, t0_time)
 
     return render.Root(
         show_full_animation = True,
@@ -228,6 +247,13 @@ def get_schema():
                 icon = "stopwatch",
                 options = scroll_speed_options,
                 default = scroll_speed_options[0].value,
+            ),
+            schema.Toggle(
+                id = "localtime",
+                name = "Local Time",
+                desc = "Display launch time in your local timezone",
+                icon = "clock",
+                default = False,
             ),
         ],
     )
